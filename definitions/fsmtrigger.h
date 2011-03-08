@@ -43,6 +43,10 @@ namespace FSMDefinition
     void applyAttributes( const QDomElement& roInElement );
     // update dom attributes - to be overwritten in derived classes
     void updateAttributes( QDomElement& roInOutElement ) const;
+
+  protected:
+    // attribute values as strings
+    QString          moAttributeValues[ AN_LAST-FSMDefinitionBase::AN_LAST ];
   };
 }
 

@@ -157,14 +157,15 @@ void FSMDefinitionBase::applyAttributes
   for ( uiIdx = 0; uiIdx < uiInSize; ++uiIdx )
   {
     QString oAttr = roInDefinition.attribute( paoInAttributeNames[ uiIdx ], "" );
-    if ( uiIdx == uiInIdxId )
-    {// use name as attribute
-      changedId( oAttr );
-    }
-    else
+    if ( uiIdx != uiInIdxId )
     {// assign attribute value
       paoInOutAttributeValues[ uiIdx ] = oAttr;
     }
+  }
+
+  if ( uiInIdxId < uiInSize )
+  {
+    changedId( roInDefinition.attribute( paoInAttributeNames[ uiInIdxId ], "" ) );
   }
 }
 

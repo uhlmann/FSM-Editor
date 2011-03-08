@@ -18,9 +18,12 @@ const QString FSMTimer::moAttributeNames[ FSMTimer::AN_LAST-FSMDefinitionBase::A
 
 FSMTimer::FSMTimer( const QString& roInName, bool bInIsPrototype)
   : FSMDefinitionBase( roInName, "timer", DT_TIMER, bInIsPrototype )
-  , moMSecs()
-  , moCnt()
 {
+  unsigned int uiIdx = 0;
+  for ( uiIdx = 0; uiIdx < AN_LAST-FSMDefinitionBase::AN_LAST; ++uiIdx)
+  {
+    moAttributeValues[ uiIdx ] = "";
+  }
 }
 
 // creation method
@@ -45,11 +48,11 @@ QString  FSMTimer::getAttributeName( unsigned int uiIdx ) const
 // apply attributes
 void FSMTimer::applyAttributes( const QDomElement& roInDefinition )
 {
-  // do work of base class
-  FSMDefinitionBase::applyAttributes( roInDefinition);
-
   // handle parameters of this class
   FSMDefinitionBase::applyAttributes( roInDefinition, moAttributeNames, moAttributeValues, AN_LAST-FSMDefinitionBase::AN_LAST, AN_LAST);
+
+  // do work of base class
+  FSMDefinitionBase::applyAttributes( roInDefinition);
 
 }
 

@@ -22,10 +22,6 @@ namespace FSMDefinition
       , AN_LAST                            /// end marker
     };
 
-    // name of defintion type
-    QString          moMSecs; /// milliseconds of repetition
-    QString          moCnt;   /// counter
-
     // name of common attributes
     static const QString moAttributeNames[ AN_LAST-FSMDefinitionBase::AN_LAST ];
 
@@ -47,6 +43,9 @@ namespace FSMDefinition
     // update dom attributes - to be overwritten in derived classes
     void updateAttributes( QDomElement& roInOutElement ) const;
 
+  protected:
+    // attribute values as strings
+    QString          moAttributeValues[ AN_LAST-FSMDefinitionBase::AN_LAST ];
   };
 }
 
