@@ -42,6 +42,7 @@ private slots:
   void slotOpen();
   void slotSaveAs();
   void slotDelete();
+  void slotDeleteDefinition();
   void slotCut();
   void slotCopy();
   void slotPaste();
@@ -84,6 +85,9 @@ private:
   QAction *mpoActionBringToFront;
   QAction *mpoActionBringToBack;
   QAction *mpoActionProperties;
+
+  // action for defintion
+  QAction *mpoActionDefinitionsDelete;
 
   QGraphicsScene *mpoScene;
   QGraphicsView *mpoView;

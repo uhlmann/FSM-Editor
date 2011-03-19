@@ -39,6 +39,7 @@ MainWin::MainWin()
   , mpoActionBringToFront( 0 )
   , mpoActionBringToBack( 0 )
   , mpoActionProperties( 0 )
+  , mpoActionDefinitionsDelete( 0 )
   , mpoScene( new QGraphicsScene(0, 0, 5000, 5000) )
   , mpoView( new QGraphicsView )
   , mpoDefinitionNav( 0 )
@@ -175,6 +176,26 @@ void MainWin::slotDelete()
   }
 
   qDeleteAll(items);
+}
+
+// delete currently selected definition
+void MainWin::slotDeleteDefinition()
+{
+  if ( !mpoDefinitionNav ) return;
+
+  if ( mpoDefinitionNav->selectedItems().isEmpty() ) return; // no element selected
+
+  // \todo ask user to confirm delete action
+
+  foreach ( QTreeWidgetItem* poItem, mpoDefinitionNav->selectedItems())
+  {// delete all selected items
+    if ( poItem)
+    {
+      //\todo identify and remove related dom elements
+      // free memory
+      delete poItem; poItem = 0;
+    }
+  }
 }
 
 void MainWin::slotChangedLevel( QTreeWidgetItem* poCurrent, QTreeWidgetItem* /*poPrev*/ )
@@ -378,6 +399,10 @@ void MainWin::createActions()
   mpoActionProperties = new QAction(tr("P&roperties..."), this);
   connect(mpoActionProperties, SIGNAL(triggered()),
           this, SLOT(slotProperties()));
+
+  // actions for definitions
+  mpoActionDefinitionsDelete = new QAction( tr("Delete"), this );
+
 }
 
 void MainWin::createMenus()
@@ -427,8 +452,12 @@ void MainWin::createNavigation()
   QDockWidget *poDockDefinitions = new QDockWidget(tr("Definitions"), this);
   poDockDefinitions->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
   mpoDefinitionNav = new QTreeWidget(poDockDefinitions);
+  mpoDefinitionNav->setContextMenuPolicy(Qt::ActionsContextMenu);
   mpoDefinitionNav->setColumnCount( 2 );
+  // context menu for definitions
+  mpoDefinitionNav->addAction( mpoActionDefinitionsDelete );
   connect( mpoDefinitionNav, SIGNAL( itemSelectionChanged() ), this, SLOT( slotDefinitionSelectionChanged() ) );
+  connect( mpoActionDefinitionsDelete, SIGNAL( triggered() ), this, SLOT( slotDeleteDefinition() ) );
   poDockDefinitions->setWidget( mpoDefinitionNav );
   addDockWidget(Qt::LeftDockWidgetArea, poDockDefinitions);
   assert( mpoViewMenu);
