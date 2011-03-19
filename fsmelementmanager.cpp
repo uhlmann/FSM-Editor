@@ -632,9 +632,26 @@ void FSMElementManager::slotElementDestroyed( QObject* poInObject )
     unsigned int uiIdx = 0;
     for ( uiIdx = 0; uiIdx < XS_LAST; ++uiIdx)
     {
-      moItemToDomElement[uiIdx].remove( poItem );
+      if (!moItemToDomElement[uiIdx].contains( poItem) ) continue; // skip rest of loop
+
+      // remove item from map to dom element
+      QDomElement roDomElement = moItemToDomElement[uiIdx].take( poItem );
+      if ( !roDomElement.isNull() )
+      {
+        // remove element from parents
+        QDomNode roParentNode = roDomElement.parentNode();
+        if (!roParentNode.isNull())
+        {// remove element from parent
+          roParentNode.removeChild( roDomElement );
+        }
+      }
+      //\todo remove child dom elements
     }
-    moItemToTreeItem.remove( poItem );
+    if ( moItemToTreeItem.contains( poItem ))
+    {
+      QTreeWidgetItem* poTreeItem = moItemToTreeItem.take( poItem );
+      delete poTreeItem; poTreeItem = 0;
+    }
     moElements.remove( poItem->getId() );
   }
   else
