@@ -2,7 +2,10 @@
 (c) 2011 Matthias Uhlmann
          matthias.uhlmann@gmx.de
 */
+#include <assert.h>
+
 #include <QBrush>
+#include <QGraphicsSceneMouseEvent>
 #include <QPen>
 #include "port.h"
 #include "link.h"
@@ -121,6 +124,48 @@ QVariant Port::itemChange(GraphicsItemChange eInChange, const QVariant & roInVal
 
     return QGraphicsItem::itemChange( eInChange, roInValue );
 }
+// handling of mouse move events
+void Port::mouseMoveEvent ( QGraphicsSceneMouseEvent * poInEvent )
+{
+  // handle event in base class
+  QGraphicsPolygonItem::mouseMoveEvent( poInEvent );
+
+  // move center to outline of parent (state)
+  QGraphicsItem* poParentItem = parentItem();
+  if ( poParentItem)
+  {// parent item exists
+    // mouse click position in item coordinates
+    QPointF oPosEvent       = poInEvent->pos();
+    // map to parent coordinates
+    QPointF oPosEventParent = mapToParent(oPosEvent );
+
+    // calculation in parent coordinates (centered by QPoint(0,0))
+    QLineF oLine(QPointF( 0,0 ), oPosEventParent);
+    // move end point of line ( current center of port), so that a intersection is guaranteed
+    oLine.setLength( poParentItem->boundingRect().width() + poParentItem->boundingRect().height() );
+    QPolygonF oPolygon = poParentItem->shape().toFillPolygon();
+    QPointF p1 = oPolygon.first();
+    QPointF p2;
+    QPointF oIntersectionPoint;
+    QLineF oSegment;
+    for (int i = 1; i < oPolygon.count(); ++i)
+    {
+      p2 = oPolygon.at(i);
+      oSegment = QLineF(p1, p2);
+      QLineF::IntersectType oIntersectType =
+          oSegment.intersect(oLine, &oIntersectionPoint);
+      if (oIntersectType == QLineF::BoundedIntersection)
+      {
+        // assign intersection point with outline of parent node
+        // position is already in parent coordinates
+        setPos( oIntersectionPoint-boundingRect().center() );
+        break;
+      }
+      p1 = p2;
+    }
+  }
+}
+
 
 // create dom element in current working document
 QDomElement Port::createDomElement( QDomDocument& /*roInOutDomDocument*/ ) const

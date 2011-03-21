@@ -165,8 +165,8 @@ void MainWin::slotAddDefinition()
 
 void MainWin::slotDelete()
 {
-  QList<QGraphicsItem *> items = mpoScene->selectedItems();
-  QMutableListIterator<QGraphicsItem *> i(items);
+  QList<QGraphicsItem *> oItems = mpoScene->selectedItems();
+  QMutableListIterator<QGraphicsItem *> i(oItems);
   while (i.hasNext()) {
     Link *link = dynamic_cast<Link *>(i.next());
     if (link) {
@@ -175,7 +175,7 @@ void MainWin::slotDelete()
     }
   }
 
-  qDeleteAll(items);
+  qDeleteAll(oItems);
 }
 
 // delete currently selected definition

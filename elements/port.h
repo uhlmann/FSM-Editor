@@ -19,6 +19,7 @@ QT_END_NAMESPACE
 forward declarations
 */
 class Link;
+class QGraphicsSceneMouseEvent;
 
 /*
  state representation
@@ -67,6 +68,9 @@ protected:
 
     // item has has changed
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+
+    // handling of mouse move events
+    void mouseMoveEvent ( QGraphicsSceneMouseEvent * poInEvent );
 
     static const QString gmaAttributeNames[ AN_LAST ];
 
