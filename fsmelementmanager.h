@@ -30,9 +30,10 @@ class FSMElementManager : public QObject
 {
     Q_OBJECT
 public:
-    typedef QHash<DomViewIfc*, QDomElement> ElementToDomHash_T;
+
+    typedef QHash<DomViewIfc*, QDomElement>      ElementToDomHash_T;
     typedef QHash<DomViewIfc*, QTreeWidgetItem*> ElementToTreeItem_T;
-    typedef QMap<QString, FSMDefinitionIfc*> IdToDefinitionMap_T;
+    typedef QMap<QString, FSMDefinitionIfc*>     IdToDefinitionMap_T;
 
 
     // possible xml elements

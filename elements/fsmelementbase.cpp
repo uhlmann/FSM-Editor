@@ -14,13 +14,18 @@ const QString FSMElementBase::gmaFSMElementTagName[ FSMElementIfc::ET_LAST ] =
     , "trigger"    // ET_TRIGGER
 };
 
-FSMElementBase::FSMElementBase(FSMElementIfc* poInElementParent, QObject *poInParent)
+FSMElementBase::FSMElementBase(FSMElementIfc* poInElementParent, QObject *poInParent, const QString& roInPrototypeName, bool bInIsPrototype )
 : QObject(poInParent)
 , FSMElementIfc()
 , mpoElementParent( poInElementParent )
 , moId()
 , moDomParentId( "" )
 {
+  if ( bInIsPrototype)
+  {// register as prototype
+    // must not be allocated with new!
+    getPrototypes()[ roInPrototypeName ] = this;
+  }
 }
 
 FSMElementBase::~FSMElementBase()
@@ -130,6 +135,39 @@ void FSMElementBase::applyAttributes( const QDomElement& /*roInElement*/ )
 {
 
 }
+
+// returns string list with definition names
+const QStringList FSMElementBase::getElementNames( void )
+{
+  return getPrototypes().keys();
+}
+
+// return the Id String of a dom element
+QString FSMElementBase::getId( const QDomElement& roInElement )
+{
+  QString oResult;
+  foreach (QString oProtoTypeTag, getElementNames() )
+  {// search definition
+
+    if ( roInElement.tagName() == oProtoTypeTag )
+    {
+      oResult = oProtoTypeTag;
+      //\todo delegate id creation to prototype
+      getPrototypes()[ oProtoTypeTag];
+    }
+  }
+
+  return oResult;
+}
+
+// map with prototypes (not allocated with new!)
+FSMElementBase::TagNameToElementMap_T& FSMElementBase::getPrototypes()
+{
+  // prototypes for creation, allocated with new
+  static TagNameToElementMap_T goInstance;
+  return goInstance;
+}
+
 
 // slot to connect on signal sigChangedId( const FSMElementIfc&)
 void FSMElementBase::slotUpdateId( const FSMElementIfc& )

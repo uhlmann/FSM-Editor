@@ -30,10 +30,12 @@ const QString Link::gmaAttributeNames[ Link::AN_LAST ] =
   , "polygon"   // AN_POLYGON   list of point coordinates separated by spaces
 };
 
-Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected )
-  : FSMElementBase()
-  , mpoTextItem( 0 )
+// create and register prototype
+static Link goLinkProto( 0,0, true, true );
 
+Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected, bool bInPrototype  )
+  : FSMElementBase( 0, 0, gmaFSMElementTagName[ ET_TRANSITION], bInPrototype)
+  , mpoTextItem( 0 )
   , moTrigger( QString("trigger_" ) + QString::number( Link::gmiHelperCnt++))
   , moStateFrom("")
   , moStateTo("")
@@ -42,6 +44,8 @@ Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected )
   , moCondition( "")
   , mbDrawArrow( bInDirected )
 {
+  if ( bInPrototype) return; // no further registration
+
   if ( !poInFromNode || !poInToNode)
   {/// destination or source node do not exist
     return;
@@ -79,8 +83,8 @@ Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected )
   FSMElementManager::getInstance().addElement( this );
 }
 
-Link::Link( const QDomElement * poInElement, bool bInDirected )
-  : FSMElementBase()
+Link::Link( const QDomElement * poInElement, bool bInDirected, bool bInPrototype )
+  : FSMElementBase( 0,0, gmaFSMElementTagName[ ET_TRANSITION], bInPrototype )
   , mpoTextItem( 0 )
   , moTrigger( QString("trigger_" ) + QString::number( Link::gmiHelperCnt++))
   , moStateFrom("")
@@ -92,6 +96,8 @@ Link::Link( const QDomElement * poInElement, bool bInDirected )
   , mpoToPort( 0 )
   , mbDrawArrow( bInDirected )
 {
+  if ( bInPrototype) return; // no further registration
+
   if (!poInElement) return;
 
   mpoTextItem = new QGraphicsSimpleTextItem( this );

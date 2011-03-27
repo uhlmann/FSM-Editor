@@ -5,6 +5,7 @@
 #ifndef FSMELEMENTBASE_H
 #define FSMELEMENTBASE_H
 
+#include <QMap>
 #include <QObject>
 #include "elements/fsmelementifc.h"
 
@@ -12,7 +13,7 @@ class FSMElementBase : public QObject, public FSMElementIfc
 {
     Q_OBJECT
 public:
-    explicit FSMElementBase(FSMElementIfc* poInElementParent = 0,QObject *parent = 0);
+    explicit FSMElementBase(FSMElementIfc* poInElementParent = 0,QObject *parent = 0, const QString& roInPrototypeName = "", bool bInIsPrototype = false );
 
     virtual ~FSMElementBase();
 
@@ -44,12 +45,21 @@ public:
     // apply attributes
     void applyAttributes( const QDomElement& roInElement );
 
+    // returns string list with definition names
+    static const QStringList getElementNames( void );
+
+    // return the Id String of a dom element
+    static QString getId( const QDomElement& roInElement );
 
     // array with tag names for xml representation
     static const QString gmaFSMElementTagName[ ET_LAST ];
 
-
 protected:
+    typedef QMap<QString, FSMElementBase* > TagNameToElementMap_T;
+
+    // map with prototypes (not allocated with new!)
+    static TagNameToElementMap_T& getPrototypes();
+
     // update dom attributes - to be overwritten in derived classes
     virtual void updateAttributes( QDomElement& roInOutElement ) const;
     // assign new scene attributes apply derived methods

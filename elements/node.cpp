@@ -29,11 +29,12 @@ const QString Node::gmaAttributeNames[ AN_LAST ] =
       , "height"      /// AN_HEIGHT heigth
     };
 
+static Node goNodeProto(0, "node_prototype", true );
 
 // pointer to dom element containing node information
 // roInDefaultName - name if poInDomElement is 0
-Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName )
-  : FSMElementBase()
+Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, bool bInIsPrototype )
+  : FSMElementBase( 0,0, gmaFSMElementTagName[ ET_STATE], bInIsPrototype )
   , miPortCnt( 0 )
   , mdPadding( 8.0 )
   , moType( "" )
@@ -46,6 +47,8 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName )
   , moEnterEvent()
   , moExitEvent()
 {
+  if (bInIsPrototype ) return; // no further registration
+
   moId = roInDefaultName;
 
   if ( poInDomElement )

@@ -44,7 +44,7 @@ public:
 
     // pointer to dom element containing node information
     // roInDefaultName - name if poInDomElement is 0
-    Node( const QDomElement* poInDomElement, const QString& roInDefaultName );
+    Node( const QDomElement* poInDomElement, const QString& roInDefaultName, bool bInIsPrototype = false );
     ~Node();
 
     /* changing attributes */

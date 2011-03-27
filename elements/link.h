@@ -29,8 +29,8 @@ public:
         , AN_LAST      /// end marker
     };
 
-    Link(Node *fromNode, Node *toNode, bool bInDirected=true );
-    Link( const QDomElement * poInElement, bool bInDirected=true );
+    Link(Node *fromNode, Node *toNode, bool bInDirected=true, bool bInPrototype = false );
+    Link( const QDomElement * poInElement, bool bInDirected=true, bool bInPrototype = false  );
     ~Link();
     // release Port and set member pointer to 0 - no delete
     // true if mpoFromPort or mpoToPort matches

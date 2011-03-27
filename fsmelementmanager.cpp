@@ -4,6 +4,7 @@
 */
 #include <assert.h>
 #include <QApplication>
+#include <QDomNodeList>
 #include <QGraphicsItem>
 #include <QMessageBox>
 #include <QTextStream>
@@ -628,7 +629,6 @@ void FSMElementManager::slotElementDestroyed( QObject* poInObject )
   FSMElementBase* poItem = dynamic_cast<FSMElementBase*>( poInObject );
   if ( poItem )
   {
-    // todo - delete tree
     unsigned int uiIdx = 0;
     for ( uiIdx = 0; uiIdx < XS_LAST; ++uiIdx)
     {
@@ -636,16 +636,32 @@ void FSMElementManager::slotElementDestroyed( QObject* poInObject )
 
       // remove item from map to dom element
       QDomElement roDomElement = moItemToDomElement[uiIdx].take( poItem );
+
       if ( !roDomElement.isNull() )
       {
+        // get List with children
+        QDomNodeList oChildList = roDomElement.childNodes();
         // remove element from parents
         QDomNode roParentNode = roDomElement.parentNode();
         if (!roParentNode.isNull())
         {// remove element from parent
           roParentNode.removeChild( roDomElement );
         }
+
+        unsigned int uiIdx = 0;
+        for ( uiIdx = 0; uiIdx < oChildList.length(); ++uiIdx )
+        {
+          if ( !oChildList.item( static_cast<int>( uiIdx ) ).isElement() ) continue;
+
+          QString oId = FSMElementBase::getId( oChildList.item( static_cast<int>( uiIdx ) ).toElement() );
+          // get related graphical item
+          FSMElementBase* poItem = dynamic_cast<FSMElementBase*>( moElements[ oId ] );
+          if ( poItem) {
+            // destroy related graphic item
+            delete poItem; poItem = NULL;
+          } // if poItem
+        } //
       }
-      //\todo remove child dom elements
     }
     if ( moItemToTreeItem.contains( poItem ))
     {
