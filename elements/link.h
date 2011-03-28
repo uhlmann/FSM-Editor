@@ -64,9 +64,12 @@ public:
     void applyAttributes( const QDomElement& roInElement );
 
 protected:
-    static const QString gmaAttributeNames[ AN_LAST ];
+    // calculate id from a dom element
+    QString calculateId( const QDomElement& roInElement) const;
 
     QRectF boundingRect() const;
+
+    static const QString gmaAttributeNames[ AN_LAST ];
 
     QGraphicsSimpleTextItem* mpoTextItem; /// fst line: trigger + cond, snd line:action
     QString moTrigger;

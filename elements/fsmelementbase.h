@@ -68,6 +68,8 @@ protected:
     void changedId( const QString& roInId );
     // assign id of element containing related dom parent
     inline void setDomParentId( const QString& roInId ) { moDomParentId = roInId; }
+    // calculate id from a dom element - to be implemented in concrete derived class
+    virtual QString calculateId( const QDomElement& roInElement) const;
 
     FSMElementIfc* mpoElementParent;
 

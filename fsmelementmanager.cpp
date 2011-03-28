@@ -629,6 +629,11 @@ void FSMElementManager::slotElementDestroyed( QObject* poInObject )
   FSMElementBase* poItem = dynamic_cast<FSMElementBase*>( poInObject );
   if ( poItem )
   {
+    if ( !moElements.contains( poItem->getId())) return; // element already removed
+
+    // remove from hash
+    moElements.remove( poItem->getId() );
+
     unsigned int uiIdx = 0;
     for ( uiIdx = 0; uiIdx < XS_LAST; ++uiIdx)
     {
@@ -668,7 +673,6 @@ void FSMElementManager::slotElementDestroyed( QObject* poInObject )
       QTreeWidgetItem* poTreeItem = moItemToTreeItem.take( poItem );
       delete poTreeItem; poTreeItem = 0;
     }
-    moElements.remove( poItem->getId() );
   }
   else
   {// check if object is a definition

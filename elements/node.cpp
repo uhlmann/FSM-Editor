@@ -453,7 +453,8 @@ void Node::applyAttributes( const QDomElement& roInElement )
 
 
 // calculate id by Element class using related Dom Element
-QString Node::calcId( const QDomElement& roInElement )
+// calculate id from a dom element
+QString Node::calculateId( const QDomElement& roInElement) const
 {
   QString oResult;
 

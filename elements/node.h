@@ -88,12 +88,19 @@ public:
     bool setAttribute( const QString& roInName, const QString& roInValue);
     // apply attributes
     void applyAttributes( const QDomElement& roInElement );
+
+#if 0
     // calculate id by Element class using related Dom Element
     static QString calcId( const QDomElement& roInElement );
+#endif
 
     static const QString gmaAttributeNames[ AN_LAST ];
 
 protected:
+    // calculate id from a dom element
+    QString calculateId( const QDomElement& roInElement) const;
+
+
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value);

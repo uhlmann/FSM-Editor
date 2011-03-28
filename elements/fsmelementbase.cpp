@@ -151,14 +151,22 @@ QString FSMElementBase::getId( const QDomElement& roInElement )
 
     if ( roInElement.tagName() == oProtoTypeTag )
     {
-      oResult = oProtoTypeTag;
-      //\todo delegate id creation to prototype
-      getPrototypes()[ oProtoTypeTag];
+      // delegate to concrete object
+      oResult = (getPrototypes()[ oProtoTypeTag])->calculateId( roInElement);
+      break;
     }
   }
 
   return oResult;
 }
+
+// calculate id from a dom element - to be implemented in concrete derived class
+QString FSMElementBase::calculateId( const QDomElement& /*roInElement*/) const
+{
+  static unsigned int guiId = 0; // global counter
+  return ( QString("id_") + QString::number( guiId++) );
+}
+
 
 // map with prototypes (not allocated with new!)
 FSMElementBase::TagNameToElementMap_T& FSMElementBase::getPrototypes()

@@ -251,6 +251,31 @@ void Link::updateStates()
   }
 }
 
+// calculate id from a dom element
+QString Link::calculateId( const QDomElement& roInElement) const
+{
+  // start state
+  QString oStateFrom =
+      roInElement.attribute( gmaAttributeNames[ AN_BEGIN ], moStateFrom );
+
+  // trigger
+  QString oTrigger =
+      roInElement.attribute( gmaAttributeNames[ AN_TRIGGER ], moTrigger );
+
+  // condition
+  QString oCondition =
+      roInElement.attribute( gmaAttributeNames[ AN_CONDITION], moCondition );
+
+  QString oId = oStateFrom;
+  oId += "_";
+  oId += oTrigger;
+  oId += "_";
+  oId += oCondition;
+
+  return oId;
+}
+
+
 QRectF Link::boundingRect() const
 {
   if (!mpoFromPort || !mpoToPort)
