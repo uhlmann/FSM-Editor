@@ -4,6 +4,7 @@
 */
 #include <QtGui>
 #include <QDomElement>
+#include <QGraphicsRectItem>
 
 #include "node.h"
 #include "port.h"
@@ -46,8 +47,15 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   , moExitStopTimers()
   , moEnterEvent()
   , moExitEvent()
+  , mpoSelectionHandleTopLeft( 0 )
+  , mpoSelectionHandleTopRight( 0 )
+  , mpoSelectionHandleBottomLeft( 0 )
+  , mpoSelectionHandleBottomRight( 0 )
 {
   if (bInIsPrototype ) return; // no further registration
+
+  // create selection handles
+  createSelectionHandles();
 
   moId = roInDefaultName;
 
@@ -60,6 +68,9 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   moBackgroundColor = Qt::white;
 
   setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges );
+
+  // create selection handles
+  createSelectionHandles();
 
   FSMElementManager::getInstance().addElement( this );
 }
@@ -242,8 +253,8 @@ void Node::paint(QPainter *painter,
 void Node::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   QString oNodeName = QInputDialog::getText(event->widget(),
-                                       tr("Edit Text"), tr("Enter new text:"),
-                                       QLineEdit::Normal, name() );
+                                            tr("Edit Text"), tr("Enter new text:"),
+                                            QLineEdit::Normal, name() );
 
   if (!oNodeName.isEmpty())
     setName(oNodeName);
@@ -261,9 +272,16 @@ QVariant Node::itemChange(GraphicsItemChange eInChange,
         poPort->updateGeometry();
       }
     }
+
+    // update selection handles
+    updateHandlePositions();
+
     // update scene attributes
     QDomElement oDomDummy;
     updateAttributesScene( oDomDummy );
+  } else if ( eInChange == ItemSelectedChange ) {
+    // selection has changed
+    setSelectionHandlesVisible( roInValue.toBool() );
   }
 
   // do work of base class
@@ -444,13 +462,65 @@ void Node::applyAttributes( const QDomElement& roInElement )
       else if ( oTag == FSMElementManager::gmaXMLSectionNames[ FSMElementManager::XE_STATE])
       {
         setDomParentId(
-          roDomNode.toElement().attribute(gmaAttributeNames[ AN_NAME ], "" ) );
+            roDomNode.toElement().attribute(gmaAttributeNames[ AN_NAME ], "" ) );
       }
     }
   }
 }
 
+// create selection handles
+void Node::createSelectionHandles()
+{
+  QRect oRect( -2.5,-2.5, 5.0, 5.0 );
 
+  mpoSelectionHandleTopLeft     = new QGraphicsRectItem( this );
+  mpoSelectionHandleTopLeft     -> setRect( oRect );
+  mpoSelectionHandleTopLeft     ->
+      setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges );
+
+  mpoSelectionHandleTopRight    = new QGraphicsRectItem( this );
+  mpoSelectionHandleTopRight    -> setRect( oRect );
+  mpoSelectionHandleTopRight    ->
+      setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges );
+
+  mpoSelectionHandleBottomLeft  = new QGraphicsRectItem( this );
+  mpoSelectionHandleBottomLeft  -> setRect( oRect );
+  mpoSelectionHandleBottomLeft  ->
+      setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges );
+
+  mpoSelectionHandleBottomRight = new QGraphicsRectItem( this );
+  mpoSelectionHandleBottomRight -> setRect( oRect );
+  mpoSelectionHandleBottomRight ->
+      setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges );
+
+  setSelectionHandlesVisible( false );
+}
+
+// update handle positions
+void Node::updateHandlePositions()
+{
+  const qreal& rWidth = boundingRect().width();
+  const qreal& rHeight = boundingRect().height();
+
+  // move handles relative to center of Node
+  mpoSelectionHandleTopLeft     -> setPos( -rWidth / 2.0, -rHeight / 2.0 );
+  mpoSelectionHandleTopRight    -> setPos(  rWidth / 2.0, -rHeight / 2.0 );
+  mpoSelectionHandleBottomLeft  -> setPos( -rWidth / 2.0, rHeight / 2.0 );
+  mpoSelectionHandleBottomRight -> setPos(  rWidth / 2.0, rHeight / 2.0 );
+}
+
+// show/hide handles
+void Node::setSelectionHandlesVisible( bool bInShow )
+{
+  if ( mpoSelectionHandleTopLeft)
+    mpoSelectionHandleTopLeft     -> setVisible( bInShow );
+  if (mpoSelectionHandleTopRight)
+    mpoSelectionHandleTopRight    -> setVisible( bInShow );
+  if (mpoSelectionHandleBottomLeft)
+    mpoSelectionHandleBottomLeft  -> setVisible( bInShow );
+  if ( mpoSelectionHandleBottomRight )
+  mpoSelectionHandleBottomRight -> setVisible( bInShow );
+}
 
 // calculate id by Element class using related Dom Element
 // calculate id from a dom element

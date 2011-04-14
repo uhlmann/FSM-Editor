@@ -15,6 +15,7 @@
 
 class Port;
 class QDomElement;
+class QGraphicsRectItem;
 class QTreeWidget;
 
 class Node : public FSMElementBase, public QGraphicsItem
@@ -97,6 +98,15 @@ public:
     static const QString gmaAttributeNames[ AN_LAST ];
 
 protected:
+    // create selection handles
+    void createSelectionHandles();
+
+    // update handle positions
+    void updateHandlePositions();
+
+    // show/hide handles
+    void setSelectionHandlesVisible( bool bInShow );
+
     // calculate id from a dom element
     QString calculateId( const QDomElement& roInElement) const;
 
@@ -118,6 +128,13 @@ protected:
     QString moExitStopTimers;
     QString moEnterEvent;
     QString moExitEvent;
+
+    // selection handle
+    QGraphicsRectItem* mpoSelectionHandleTopLeft;
+    QGraphicsRectItem* mpoSelectionHandleTopRight;
+    QGraphicsRectItem* mpoSelectionHandleBottomLeft;
+    QGraphicsRectItem* mpoSelectionHandleBottomRight;
+
 
     QColor moTextColor;
     QColor moBackgroundColor;

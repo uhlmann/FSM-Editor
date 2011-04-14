@@ -53,7 +53,10 @@ public slots:
     void slotItemChanged ( QTableWidgetItem * item );
     // slot to handle destruction of assosiated element
     void slotDestroyed( QObject* );
-
+    // slot to accept data
+    void accept();
+    // slot to reject data
+    void reject();
 };
 
 #endif // DLGATTRIBUTES_H
