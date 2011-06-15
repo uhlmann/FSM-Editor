@@ -627,7 +627,8 @@ void FSMElementManager::setLevel( const QString& roInLevel, bool bInForce )
 void FSMElementManager::slotElementDestroyed( QObject* poInObject )
 {
   FSMElementBase* poItem = dynamic_cast<FSMElementBase*>( poInObject );
-  if ( poItem )
+  // elements with no id is e.g. the link prototype
+  if ( poItem && !poItem->getId().isEmpty())
   {
     if ( !moElements.contains( poItem->getId())) return; // element already removed
 
