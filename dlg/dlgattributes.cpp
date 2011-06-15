@@ -186,6 +186,17 @@ void DlgAttributes::slotDestroyed( QObject* )
 
   // remove rows
   clear();
+}
+
+// slot to accept data
+void DlgAttributes::accept()
+{
+
+}
+
+// slot to reject data
+void DlgAttributes::reject()
+{
 
 }
 
