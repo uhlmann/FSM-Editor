@@ -41,6 +41,7 @@ public slots:
 private slots:
   void slotOpen();
   void slotSaveAs();
+  void slotClose();
   void slotDelete();
   void slotDeleteDefinition();
   void slotCut();
@@ -74,6 +75,7 @@ private:
   QToolBar *mpoEditToolBar;
   QAction *mpoActionOpen;
   QAction *mpoActionSaveAs;
+  QAction *mpoActionClose;
   QAction *mpoActionExit;
   QAction *mpoActionNode;
   QAction *mpoActionLink;

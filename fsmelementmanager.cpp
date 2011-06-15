@@ -394,6 +394,11 @@ bool FSMElementManager::read( QIODevice* poInDevice )
   int iErrorLine   = -1;
   int iErrorColumn = -1;
 
+  if(!moDomDocumentRead.isNull())
+  {
+    close();
+  }
+
   if (!moDomDocumentRead.setContent(poInDevice, true, &oErrorString, &iErrorLine,
                                     &iErrorColumn))
   {
@@ -462,6 +467,50 @@ bool FSMElementManager::write( QIODevice* poInDevice )
   oOutStream.setCodec( "UTF-8" );
   moDomDocumentWrite.save(oOutStream, iIndentSize, QDomElement::EncodingFromTextStream);
   return true;
+}
+
+void FSMElementManager::close()
+{
+  setLevel("",true);
+  delete mpoRootTreeItem;
+  mpoRootTreeItem = 0;
+
+  delete mpoRootTreeItemDefinitions;
+  mpoRootTreeItemDefinitions = 0;
+  moItemToTreeItem.clear();
+  moDefinitionToTreeItem.clear();
+  unsigned int uiIdx = 0;
+  for ( uiIdx = 0; uiIdx < XS_LAST; ++uiIdx)
+  {
+    moItemToDomElement[ uiIdx ].clear();
+  }
+  moItemToTreeItem.clear();
+  moDefinitionToTreeItem.clear();
+
+  moDefinitions.clear();
+  moElements.clear();
+  moDomDocumentWrite.clear();
+  moDomDocumentRead.clear();
+  moRootElement.clear();
+  moRootFSMElement.clear();
+  moRootDefinitionElement.clear();
+  moRootSceneElement.clear();
+
+  // now do same as in ctor
+  moRootElement = moDomDocumentWrite.createElement( moRootName );
+  moDomDocumentWrite.appendChild( moRootElement );
+  // section defintion
+  moRootDefinitionElement =
+      moDomDocumentWrite.createElement( gmaXMLSectionNames[ XE_DEFINITIONS]);
+  moRootElement.appendChild( moRootDefinitionElement);
+  // section fsm
+  moRootFSMElement =
+      moDomDocumentWrite.createElement( gmaXMLSectionNames[ XE_FSM]);
+  moRootElement.appendChild( moRootFSMElement);
+  // section scene
+  moRootSceneElement =
+      moDomDocumentWrite.createElement( gmaXMLSectionNames[ XE_SCENE]);
+  moRootElement.appendChild( moRootSceneElement);
 }
 
 // parse section fsm and create default scene elements if the were not created

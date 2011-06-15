@@ -115,6 +115,8 @@ public:
     bool read( QIODevice*);
     // write fsm definition as xml file
     bool write( QIODevice*);
+    // close fsm definition
+    void close();
 
     // enter new level - show / hide scene elements
     // if bInForce == false actions were only applied, if level
