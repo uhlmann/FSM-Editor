@@ -38,6 +38,7 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   : FSMElementBase( 0,0, gmaFSMElementTagName[ ET_STATE], bInIsPrototype )
   , miPortCnt( 0 )
   , mdPadding( 8.0 )
+  , mdSectionPadding( 2.0 )
   , moType( "" )
   , moEnterActions()
   , moExitActions()
@@ -45,8 +46,8 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   , moExitStartTimers()
   , moEnterStopTimers()
   , moExitStopTimers()
-  , moEnterEvent()
-  , moExitEvent()
+  , moEnterEvents()
+  , moExitEvents()
   , mpoSelectionHandleTopLeft( 0 )
   , mpoSelectionHandleTopRight( 0 )
   , mpoSelectionHandleBottomLeft( 0 )
@@ -197,12 +198,102 @@ QTreeWidgetItem* Node::createTreeItem
   return 0;
 }
 
+QString Node::getEnterActionsStr() const
+{
+  QString oText;
+  QStringList list = moEnterActions.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "=>" + str + "\n";
+  }
+  return oText;
+}
+
+QString Node::getEnterEventsStr() const
+{
+  QString oText;
+  QStringList list = moEnterEvents.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "^" + str +"\n";
+  }
+  return oText;
+}
+
+QString Node::getExitEventsStr() const
+{
+  QString oText;
+  QStringList list = moExitEvents.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "^" + str +"\n";
+  }
+  return oText;
+}
+
+
+QString Node::getExitActionsStr() const
+{
+  QString oText;
+  QStringList list = moExitActions.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "<=" + str + "\n";;
+  }
+  return oText;
+}
+
+QString Node::getEnterStartTimersStr() const
+{
+  QString oText;
+  QStringList list = moEnterStartTimers.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "+" + str + "\n";;
+  }
+  return oText;
+}
+
+QString Node::getEnterStopTimersStr() const
+{
+  QString oText;
+  QStringList list = moEnterStopTimers.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "-" + str + "\n";;
+  }
+  return oText;
+}
+
+QString Node::getExitStartTimersStr() const
+{
+  QString oText;
+  QStringList list = moExitStartTimers.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "+" + str + "\n";;
+  }
+  return oText;
+}
+
+QString Node::getExitStopTimersStr() const
+{
+  QString oText;
+  QStringList list = moExitStopTimers.split(";",QString::SkipEmptyParts);
+  foreach(QString str,list)
+  {
+    oText += "-" + str + "\n";;
+  }
+  return oText;
+}
+
 
 void Node::paint(QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget * /* widget */)
 {
   QPen pen(moOutlineColor);
+  QPen penSections(moOutlineColor);
   if (option->state & QStyle::State_Selected) {
     pen.setStyle(Qt::DotLine);
     pen.setWidth(2);
@@ -216,38 +307,66 @@ void Node::paint(QPainter *painter,
 
   painter->setPen(moTextColor);
   QString oText = moId;
-  if ( !moEnterActions.isEmpty() )
+
+  if(hasEnterFunc() || hasExitFunc())
   {
-    oText += "\n";
-    oText += moEnterActions;
+    QRectF oNameRect = getNameRect();
+    QRectF oEnterRect = getEnterSectionRect();
+    QRectF oExitRect = getExitSectionRect();
+    qreal height1=getNameRect().height() + mdPadding;
+    qreal height2=height1 + getEnterSectionRect().height();
+  //  qreal height3=height2 + getExitSectionRect().height();
+    painter->drawText(QRectF(oRect.left(),oRect.top(),oRect.width(),height1), Qt::AlignCenter, oText.trimmed() );
+    painter->setPen(penSections);
+    painter->drawLine(QPointF(oRect.left(),oRect.top() + height1),QPoint(oRect.right(),oRect.top() + height1));
+
+    oText = getEnterActionsStr();
+    oText += getEnterStartTimersStr();
+    oText += getEnterStopTimersStr();
+    oText += getEnterEventsStr();
+
+    painter->setPen(moTextColor);
+    painter->drawText(QRectF(oRect.left(),oRect.top() + height1,oRect.width(),getEnterSectionRect().height()), Qt::AlignCenter, oText.trimmed() );
+
+    painter->setPen(penSections);
+    painter->drawLine(QPointF(oRect.left(),oRect.top() + height2),QPoint(oRect.right(),oRect.top() + height2));
+    painter->setPen(moTextColor);
+    oText = getExitActionsStr();
+    oText += getExitStartTimersStr();
+    oText += getExitStopTimersStr();
+    oText += getExitEventsStr();
+
+    painter->drawText(QRectF(oRect.left(),oRect.top() + height2,oRect.width(),getExitSectionRect().height()), Qt::AlignCenter, oText.trimmed() );
+//    painter->setPen(penSections);
+//    painter->drawLine(QPointF(oRect.left(),oRect.top() + height3),QPoint(oRect.right(),oRect.top() + height3));
   }
-  if ( !moEnterStartTimers.isEmpty() )
+  else
   {
-    oText += "\n";
-    oText += moEnterStartTimers;
-  }
-  if ( !moExitStartTimers.isEmpty() )
-  {
-    oText += "\n";
-    oText += moExitStartTimers;
-  }
-  if ( !moEnterStopTimers.isEmpty() )
-  {
-    oText += "\n";
-    oText += moEnterStopTimers;
-  }
-  if ( !moExitStopTimers.isEmpty() )
-  {
-    oText += "\n";
-    oText += moExitStopTimers;
-  }
-  if ( !moExitActions.isEmpty() )
-  {
-    oText += "\n";
-    oText += moExitActions;
+    painter->drawText(oRect, Qt::AlignCenter, oText.trimmed() );
+
   }
 
-  painter->drawText(oRect, Qt::AlignCenter, oText );
+
+
+
+
+}
+
+
+bool Node::hasEnterFunc() const
+{
+  return (!moEnterActions.isEmpty() ||
+          !moEnterStartTimers.isEmpty() ||
+          !moEnterStopTimers.isEmpty() ||
+          !moEnterEvents.isEmpty() );
+}
+
+bool Node::hasExitFunc() const
+{
+  return (!moExitActions.isEmpty() ||
+          !moExitStartTimers.isEmpty() ||
+          !moExitStopTimers.isEmpty() ||
+          !moExitEvents.isEmpty() );
 }
 
 void Node::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -288,24 +407,91 @@ QVariant Node::itemChange(GraphicsItemChange eInChange,
   return QGraphicsItem::itemChange(eInChange, roInValue);
 }
 
+QRectF Node::getNameRect() const
+{
+  QFontMetricsF metrics = qApp->font();
+  QRectF oRect    = metrics.boundingRect(moId);
+  if( hasEnterFunc() || hasExitFunc())
+  {
+    oRect.setHeight(oRect.height()+mdSectionPadding);
+  }
+  return oRect;
+
+}
+
+QRectF Node::getEnterSectionRect() const
+{
+  QRectF oRect;
+  QRectF retRect;
+  qreal dWidth = 0;
+
+  if( hasEnterFunc())
+  {
+    QFontMetricsF metrics = qApp->font();
+    QStringList list = getEnterActionsStr().split("\n",QString::SkipEmptyParts);
+    list += getEnterStartTimersStr().split("\n",QString::SkipEmptyParts);
+    list += getEnterStopTimersStr().split("\n",QString::SkipEmptyParts);
+    list += getEnterEventsStr().split("\n",QString::SkipEmptyParts);
+
+    foreach(QString str,list)
+    {
+      oRect = metrics.boundingRect( str );
+      dWidth = qMax(oRect.width(),dWidth);
+      retRect.setHeight(retRect.height() + oRect.height());
+    }
+
+    retRect.setWidth(dWidth);
+    retRect.setHeight(retRect.height()+2*mdSectionPadding);
+  }
+
+  return retRect;
+}
+
+QRectF Node::getExitSectionRect() const
+{
+  QRectF oRect;
+
+  QRectF retRect;
+  qreal dWidth = 0;
+
+  if( hasEnterFunc())
+  {
+    QFontMetricsF metrics = qApp->font();
+    QStringList list = getExitActionsStr().split("\n",QString::SkipEmptyParts);
+    list += getExitStartTimersStr().split("\n",QString::SkipEmptyParts);
+    list += getExitStopTimersStr().split("\n",QString::SkipEmptyParts);
+    list += getExitEventsStr().split("\n",QString::SkipEmptyParts);
+
+    foreach(QString str,list)
+    {
+      oRect = metrics.boundingRect( str );
+      dWidth = qMax(oRect.width(),dWidth);
+      retRect.setHeight(retRect.height() + oRect.height());
+    }
+    retRect.setWidth(dWidth);
+    retRect.setHeight(retRect.height()+2*mdSectionPadding);
+  }
+
+  return retRect;
+}
+
+
 QRectF Node::outlineRect() const
 {
   enum TextType_T
   {
-    TT_NAME
-        , TT_ENTERACT
-        , TT_TIMER
-        , TT_EXITACT
-        , TT_LAST
-      };
+      TT_NAME
+    , TT_ENTER
+    , TT_EXIT
+    , TT_LAST
+  };
 
   QRectF oRectArr[ TT_LAST ];
 
   QFontMetricsF metrics = qApp->font();
-  oRectArr[ TT_NAME ]     = metrics.boundingRect(moId);
-  oRectArr[ TT_ENTERACT ] = metrics.boundingRect( moEnterActions );
-  oRectArr[ TT_TIMER ]    = metrics.boundingRect( moEnterStartTimers  );
-  oRectArr[ TT_EXITACT ]  = metrics.boundingRect( moExitActions  );
+  oRectArr[ TT_NAME ]     = getNameRect();
+  oRectArr[ TT_ENTER ] = getEnterSectionRect();
+  oRectArr[ TT_EXIT ] = getExitSectionRect();
 
   unsigned int uiIdx = 0;
   qreal dWidthMax = 0;
@@ -321,13 +507,16 @@ QRectF Node::outlineRect() const
   QRectF oRectText = oRectArr[ TT_NAME ];
 
   oRectText.setWidth( dWidthMax);
-  oRectText.setHeight(
-      3*mdPadding/2 + oRectArr[ TT_ENTERACT ].height()
-      + oRectArr[ TT_TIMER ].height() + oRectArr[ TT_EXITACT ].height() );
+  oRectText.setHeight( //3*mdPadding/2 +
+          oRectArr[ TT_NAME ].height()
+        + oRectArr[ TT_ENTER ].height()
+        + oRectArr[ TT_EXIT ].height()
+        );
 
   // add padding round the text items
   oRectText.adjust(-mdPadding, -mdPadding, +mdPadding, +mdPadding);
   oRectText.translate(-oRectText.center());
+
   return oRectText;
 }
 
@@ -357,8 +546,8 @@ void Node::updateAttributes( QDomElement& roInOutElement ) const
   roInOutElement.setAttribute( gmaAttributeNames[ AN_TSTARTEXIT ], moExitStartTimers );
   roInOutElement.setAttribute( gmaAttributeNames[ AN_TSTOPENTER ], moEnterStopTimers );
   roInOutElement.setAttribute( gmaAttributeNames[ AN_TSTOPEXIT ], moExitStopTimers );
-  roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTENTER ], moEnterEvent );
-  roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTEXIT ], moExitEvent );
+  roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTENTER ], moEnterEvents );
+  roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTEXIT ], moExitEvents );
 
 
 
@@ -417,12 +606,12 @@ void Node::applyAttributes( const QDomElement& roInElement )
   if (!oAttr.isEmpty()) moExitStartTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTOPENTER], "");
   if (!oAttr.isEmpty()) moEnterStopTimers = oAttr;
-  oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTOPENTER], "");
+  oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTOPEXIT], "");
   if (!oAttr.isEmpty()) moExitStopTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EVENTENTER], "");
-  if (!oAttr.isEmpty()) moEnterEvent = oAttr;
+  if (!oAttr.isEmpty()) moEnterEvents = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EVENTEXIT], "");
-  if (!oAttr.isEmpty()) moExitEvent = oAttr;
+  if (!oAttr.isEmpty()) moExitEvents = oAttr;
 
   // x
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_X], "");
