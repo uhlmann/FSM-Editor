@@ -186,13 +186,25 @@ void Link::updateGeometry()
   if ( !mpoFromPort || !mpoToPort ) return;
   QPointF oStartPoint = mpoFromPort->mapToScene( mpoFromPort->boundingRect().center() );//
   QPointF oEndPoint   = mpoToPort->mapToScene( mpoToPort->boundingRect().center() );
-  setLine(QLineF( oStartPoint, oEndPoint ) );
+  QPainterPath oPath(oStartPoint);
+  if( moControlPoint.isNull())
+  {
+    oPath.lineTo((oEndPoint));
+  }
+  else
+  {
+    oPath.quadTo(moControlPoint,oEndPoint);
+  }
+  setPath(oPath);
+  //setLine(QLineF( oStartPoint, oEndPoint ) );
 
   if ( mpoTextItem)
   {// move text item to center of arrow
-    QPointF oPos = mapToItem(this, boundingRect().center() );
+//    QPointF oPos = mapToItem(this, boundingRect().center() );
+    QPointF oPos = path().pointAtPercent(0.5) ;
     // move center of text object to center of line
-    oPos -= mapToItem( this, mpoTextItem->boundingRect().center() );
+//    oPos -= mapToItem( this, path().pointAtPercent(0.5) );
+//    oPos -= mapToItem( this, mpoTextItem->boundingRect().center() );
     mpoTextItem->setPos( oPos );
   }
 
@@ -284,7 +296,7 @@ QRectF Link::boundingRect() const
   qreal penWidth = 1;
   qreal extra = (penWidth + ARROWSIZE) / 2.0;
 
-  return QRectF(QGraphicsLineItem::boundingRect())
+  return QRectF(QGraphicsPathItem::boundingRect())
       .normalized()
       .adjusted(-extra, -extra, extra, extra);
 }
@@ -298,23 +310,26 @@ void Link::paint
 {
   if ( mbDrawArrow )
   {// draw arrow at end point
-    QLineF oLineBack( line().p2(), line().p1());
+    QLineF oLineBack;
+    oLineBack.setP1(path().pointAtPercent(0));
     oLineBack.setLength( ARROWSIZE );
     // rotate 15 degrees clockwise
-    oLineBack.setAngle( oLineBack.angle() + 15.0 );
+    oLineBack.setAngle( path().angleAtPercent(0) + 15.0 );
+
     QPointF oArrowStart = oLineBack.p2();
     // rotate 2*15 degrees counter clockwise
     oLineBack.setAngle( oLineBack.angle() -30.0 );
     QPointF oArrowEnd = oLineBack.p2();
 
     QPolygonF oArrowHead;
-    oArrowHead << line().p2() << oArrowStart << oArrowEnd;
+    oArrowHead << oLineBack.p1() << oArrowStart << oArrowEnd;
+    poInPainter->setPen(Qt::SolidLine);
     poInPainter->setBrush( Qt::SolidPattern );
     poInPainter->drawPolygon(oArrowHead);
 
   }
   // common work of base class
-  QGraphicsLineItem::paint( poInPainter, poInOption, poInWidget);
+  QGraphicsPathItem::paint( poInPainter, poInOption, poInWidget);
 }
 
 // assign new text to text child item
@@ -386,6 +401,8 @@ void Link::updateAttributesScene( QDomElement& roInOutElement) const
     oPolygon << QString::number(mpoFromPort->pos().y(), 'f');
     oPolygon << QString::number(mpoToPort->pos().x(), 'f');
     oPolygon << QString::number(mpoToPort->pos().y(), 'f');
+    oPolygon << QString::number(moControlPoint.x(), 'f');
+    oPolygon << QString::number(moControlPoint.y(), 'f');
 
     roInOutElement.setAttribute( gmaAttributeNames[ AN_POLYGON], oPolygon.join( " "));
   }
@@ -501,7 +518,31 @@ void Link::applyAttributes( const QDomElement& roInElement )
         assert( 0 );
       }
     }
+
+    if( oPointList.count() >= 2 )
+    {
+      bool bValid = false;
+      double dX = (oPointList.takeFirst()).toDouble( &bValid );
+      if ( bValid )
+      {
+        double dY = (oPointList.takeFirst()).toDouble( &bValid );
+        if ( bValid )
+        {
+          moControlPoint.setX(dX);
+          moControlPoint.setY(dY);
+        }
+        else
+        {
+          assert( 0 );
+        }
+      }
+      else
+      {
+        assert( 0 );
+      }
+    }
   }
+  updateGeometry();
   // add reference to parent dom node
   const QDomNode& roDomNode = roInElement.parentNode();
   if ( !roDomNode.isNull() )
@@ -533,3 +574,30 @@ void Link::slotUpdateId( const FSMElementIfc& )
   // update id and notify observers by emitting signal
   updateId();
 }
+
+
+void Link::mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event )
+{
+  if(event && !event->pos().isNull())
+  {
+    moControlPoint=QPointF(0,0);
+    updateGeometry();
+    //setPath(oPath);
+  }
+}
+
+void Link::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
+{
+  if(event && !event->pos().isNull())
+  {
+//    QPointF oStart = path().pointAtPercent(1);
+//    QPointF oEnd = path().pointAtPercent(0);
+//    QPainterPath oPath(oStart);
+//    oPath.quadTo(event->pos(),oEnd);
+//    setPath(oPath);
+    moControlPoint = event->pos();
+    updateGeometry();
+  }
+}
+
+
