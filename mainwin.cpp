@@ -101,7 +101,7 @@ void MainWin::slotOpen()
     return;
   }
 
-  if(mpoScene) mpoScene->clear();
+  slotClose();
   if (FSMElementManager::getInstance().read(&oFile))
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
