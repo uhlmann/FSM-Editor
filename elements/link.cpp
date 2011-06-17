@@ -187,6 +187,7 @@ void Link::updateGeometry()
   QPointF oStartPoint = mpoFromPort->mapToScene( mpoFromPort->boundingRect().center() );//
   QPointF oEndPoint   = mpoToPort->mapToScene( mpoToPort->boundingRect().center() );
   QPainterPath oPath(oStartPoint);
+
   if( moControlPoint.isNull())
   {
     oPath.lineTo((oEndPoint));
@@ -461,6 +462,12 @@ void Link::applyAttributes( const QDomElement& roInElement )
     }
     mpoFromPort = poFromNode->createConnectionPort( poToNode );
     mpoToPort   = poToNode->createConnectionPort( poFromNode );
+
+    if( poToNode == poFromNode)
+    {
+      // self transition, no direct line, cause this will be invisible
+      moControlPoint = mpoFromPort->pos();
+    }
 
     // assign text to text item child
     updateText();

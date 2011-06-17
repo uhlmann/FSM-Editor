@@ -28,6 +28,8 @@ const QString Node::gmaAttributeNames[ AN_LAST ] =
       , "y"           /// AN_Y      y coordinate
       , "width"       /// AN_WIDTH  width
       , "height"      /// AN_HEIGHT heigth
+      , "enterportx"
+      , "enterporty"
     };
 
 static Node goNodeProto(0, "node_prototype", true );
@@ -52,6 +54,7 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   , mpoSelectionHandleTopRight( 0 )
   , mpoSelectionHandleBottomLeft( 0 )
   , mpoSelectionHandleBottomRight( 0 )
+  , mpoEnterPort(0)
 {
   if (bInIsPrototype ) return; // no further registration
 
@@ -78,6 +81,8 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
 
 Node::~Node()
 {
+  delete mpoEnterPort;
+  mpoEnterPort = 0;
 }
 
 void Node::setId( const QString& roInId )
@@ -151,30 +156,46 @@ Port* Node::createConnectionPort( const Node* poToNode )
 {
   if ( !poToNode ) return 0;
 
+  bool bSelfTransition;
+
   // create new port
   Port* poPort = new Port( miPortCnt++, this );
 
-  // calculate position of the port
-  QLineF oLine(pos(), poToNode->pos());
-  QPolygonF oPolygon = shape().toFillPolygon();
-  QPointF p1 = oPolygon.first() + pos();
-  QPointF p2;
-  QPointF oIntersectionPoint;
-  QLineF oSegment;
-  for (int i = 1; i < oPolygon.count(); ++i)
+  if( poToNode == this)
   {
-    p2 = oPolygon.at(i) + pos();
-    oSegment = QLineF(p1, p2);
-    QLineF::IntersectType oIntersectType =
-        oSegment.intersect(oLine, &oIntersectionPoint);
-    if (oIntersectType == QLineF::BoundedIntersection)
-      break;
-    p1 = p2;
+    // self transition, consider special positions or mapping
+    bSelfTransition = true;
+  }
+
+  // calculate position of the port
+  QPointF oIntersectionPoint;
+  QPolygonF oPolygon = shape().toFillPolygon();
+
+  if( !bSelfTransition )
+  {
+    QLineF oLine(pos(), poToNode->pos());
+    QPolygonF oPolygon = shape().toFillPolygon();
+    QPointF p1 = oPolygon.first() + pos();
+    QPointF p2;
+    QLineF oSegment;
+    for (int i = 1; i < oPolygon.count(); ++i)
+    {
+      p2 = oPolygon.at(i) + pos();
+      oSegment = QLineF(p1, p2);
+      QLineF::IntersectType oIntersectType;
+        oIntersectType = oSegment.intersect(oLine, &oIntersectionPoint);
+      if (oIntersectType == QLineF::BoundedIntersection)
+        break;
+      p1 = p2;
+    }
+  }
+  else
+  {
+    oIntersectionPoint = oPolygon.first() + pos();
   }
 
   /// map to local coordinates and assign to port position
   poPort->setPos( mapFromScene(oIntersectionPoint) - poPort->boundingRect().center() );
-
   return poPort;
 }
 
@@ -343,13 +364,7 @@ void Node::paint(QPainter *painter,
   else
   {
     painter->drawText(oRect, Qt::AlignCenter, oText.trimmed() );
-
   }
-
-
-
-
-
 }
 
 
@@ -549,8 +564,6 @@ void Node::updateAttributes( QDomElement& roInOutElement ) const
   roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTENTER ], moEnterEvents );
   roInOutElement.setAttribute( gmaAttributeNames[ AN_EVENTEXIT ], moExitEvents );
 
-
-
 }
 
 // assign new scene attributes apply derived methods
@@ -569,6 +582,11 @@ void Node::updateAttributesScene( QDomElement& roInOutElement) const
   roInOutElement.setAttribute( gmaAttributeNames[ AN_Y], pos().y());
   roInOutElement.setAttribute( gmaAttributeNames[ AN_WIDTH], boundingRect().width());
   roInOutElement.setAttribute( gmaAttributeNames[ AN_HEIGHT], boundingRect().height());
+  if( 0 != mpoEnterPort )
+  {
+    roInOutElement.setAttribute( gmaAttributeNames[ AN_ENTERPORT_X], mpoEnterPort->pos().x());
+    roInOutElement.setAttribute( gmaAttributeNames[ AN_ENTERPORT_Y], mpoEnterPort->pos().y());
+  }
 }
 
 // assign attribute - returning false if not assigned
@@ -596,6 +614,19 @@ void Node::applyAttributes( const QDomElement& roInElement )
 {
   QString oAttr = roInElement.attribute( gmaAttributeNames[ AN_NAME ], "" );
   if (!oAttr.isEmpty()) moId = oAttr;
+
+  oAttr = roInElement.attribute( gmaAttributeNames[ AN_TYPE ], "" );
+  if (!oAttr.isEmpty()) moType = oAttr;
+
+  if( "entry" == moType )
+  {
+    if( 0 == mpoEnterPort )
+    {
+      mpoEnterPort = createConnectionPort(this);
+    }
+  }
+
+
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTER ], "");
   if (!oAttr.isEmpty()) moEnterActions = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EXIT ], "");
@@ -625,6 +656,7 @@ void Node::applyAttributes( const QDomElement& roInElement )
   {
     setY( oAttr.toDouble());
   }
+
 #if 0
   // width
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_WIDTH], "");
@@ -633,6 +665,29 @@ void Node::applyAttributes( const QDomElement& roInElement )
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_HEIGHT], "");
   if ( !oAttr.isEmpty()) ( oAttr.toDouble());
 #endif
+
+  // enter port handles
+  if( 0 != mpoEnterPort )
+  {
+    oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTERPORT_X], "");
+    double dX=0.0;
+    double dY=0.0;
+    if ( !oAttr.isEmpty())
+    {
+      dX = oAttr.toDouble();
+    }
+    // y
+    oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTERPORT_Y], "");
+    if ( !oAttr.isEmpty())
+    {
+      dY = oAttr.toDouble();
+    }
+
+    if( (0.0 != dX) && (0.0 != dY) )
+    {
+      mpoEnterPort->setPos(dX,dY);
+    }
+  }
 
   // add reference
   const QDomNode& roDomNode = roInElement.parentNode();
