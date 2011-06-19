@@ -28,6 +28,7 @@ MainWin::MainWin()
   , mpoEditToolBar( 0 )
   , mpoActionOpen( 0 )
   , mpoActionSaveAs( 0 )
+  , mpoActionClose( 0 )
   , mpoActionExit( 0 )
   , mpoActionNode( 0 )
   , mpoActionLink( 0 )
@@ -81,6 +82,7 @@ MainWin::MainWin()
   FSMElementManager::getInstance().addMainWin( this );
 }
 
+
 void MainWin::slotOpen()
 {
   QString oFileName =
@@ -99,9 +101,20 @@ void MainWin::slotOpen()
     return;
   }
 
+  slotClose();
   if (FSMElementManager::getInstance().read(&oFile))
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
+
+void MainWin::slotClose()
+{
+  FSMElementManager::getInstance().close();
+  if( mpoScene )
+  {
+    mpoScene->clear();
+  }
+}
+
 
 void MainWin::slotSaveAs()
 {
@@ -347,6 +360,11 @@ void MainWin::createActions()
   mpoActionSaveAs = new QAction(tr("&Save As..."), this);
   mpoActionSaveAs->setShortcuts(QKeySequence::SaveAs);
   connect(mpoActionSaveAs, SIGNAL(triggered()), this, SLOT(slotSaveAs()));
+
+  mpoActionClose = new QAction(tr("&Close..."), this);
+  mpoActionClose->setShortcuts(QKeySequence::Close);
+  connect(mpoActionClose, SIGNAL(triggered()), this, SLOT(slotClose()));
+
   mpoActionExit = new QAction(tr("E&xit"), this);
   mpoActionExit->setShortcut(tr("Ctrl+Q"));
   connect(mpoActionExit, SIGNAL(triggered()), this, SLOT(close()));
@@ -410,6 +428,7 @@ void MainWin::createMenus()
   mpoFileMenu = menuBar()->addMenu(tr("&File"));
   mpoFileMenu->addAction( mpoActionOpen);
   mpoFileMenu->addAction( mpoActionSaveAs);
+  mpoFileMenu->addAction( mpoActionClose );
   mpoFileMenu->addAction( mpoActionExit);
 
   mpoEditMenu = menuBar()->addMenu(tr("&Edit"));

@@ -40,6 +40,8 @@ public:
         , AN_Y           /// y coordinate
         , AN_WIDTH       /// width
         , AN_HEIGHT      /// heigth
+        , AN_ENTERPORT_X /// state entry port x
+        , AN_ENTERPORT_Y /// state entry port y
         , AN_LAST        /// end marker
     };
 
@@ -117,6 +119,7 @@ protected:
 
     int                  miPortCnt; // ports counter
     qreal                mdPadding;
+    qreal                mdSectionPadding;
 
     // attribute values
     QString moType;
@@ -126,8 +129,8 @@ protected:
     QString moExitStartTimers;
     QString moEnterStopTimers;
     QString moExitStopTimers;
-    QString moEnterEvent;
-    QString moExitEvent;
+    QString moEnterEvents;
+    QString moExitEvents;
 
     // selection handle
     QGraphicsRectItem* mpoSelectionHandleTopLeft;
@@ -141,11 +144,26 @@ protected:
     QColor moOutlineColor;
 
     static const qreal   gmdLimitMaxWidth; /// maximum text width
+    Port*  mpoEnterPort;
+
 
 
 private:
     QRectF outlineRect() const;
+    QRectF getNameRect() const;
+    QRectF getEnterSectionRect() const;
+    QRectF getExitSectionRect() const;
     int roundness(double size) const;
+    QString getEnterActionsStr() const;
+    QString getExitActionsStr() const;
+    QString getEnterStartTimersStr() const;
+    QString getEnterStopTimersStr() const;
+    QString getExitStartTimersStr() const;
+    QString getExitStopTimersStr() const;
+    QString getEnterEventsStr() const;
+    QString getExitEventsStr() const;
+    bool hasEnterFunc() const;
+    bool hasExitFunc() const;
 };
 
 #endif

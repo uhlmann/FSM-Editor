@@ -6,14 +6,14 @@
 #define LINK_H
 
 #include <QString>
-#include <QGraphicsLineItem>
+#include <QGraphicsPathItem>
 #include "fsmelementbase.h"
 
 class Node;
 class QDomElement;
 class Port;
 
-class Link : public FSMElementBase, public QGraphicsLineItem
+class Link : public FSMElementBase, public QGraphicsPathItem
 {
 public:
     enum AttributeName_T
@@ -68,6 +68,8 @@ protected:
     QString calculateId( const QDomElement& roInElement) const;
 
     QRectF boundingRect() const;
+    void mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event );
+    void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
 
     static const QString gmaAttributeNames[ AN_LAST ];
 
@@ -97,6 +99,7 @@ private:
 
 
     static int gmiHelperCnt;
+    QPointF moControlPoint;
 
 signals:
 
