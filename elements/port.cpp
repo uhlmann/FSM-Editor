@@ -170,7 +170,8 @@ void Port::mouseMoveEvent ( QGraphicsSceneMouseEvent * poInEvent )
 // create dom element in current working document
 QDomElement Port::createDomElement( QDomDocument& /*roInOutDomDocument*/ ) const
 {// should not be added to dom document - so return empty element
-    return QDomElement::QDomElement();
+    QDomElement oElement;
+    return oElement;
 }
 
 /// update dom attributes

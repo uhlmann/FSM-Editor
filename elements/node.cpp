@@ -156,7 +156,7 @@ Port* Node::createConnectionPort( const Node* poToNode )
 {
   if ( !poToNode ) return 0;
 
-  bool bSelfTransition;
+  bool bSelfTransition = false;
 
   // create new port
   Port* poPort = new Port( miPortCnt++, this );
