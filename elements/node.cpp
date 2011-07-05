@@ -10,6 +10,9 @@
 #include "port.h"
 #include "fsmelementmanager.h"
 
+#define ENTRY_DISTANCE 10
+#define ENTRY_WIDTH 5
+
 const qreal   Node::gmdLimitMaxWidth             = 250.0;
 const QString Node::gmaAttributeNames[ AN_LAST ] =
 {
@@ -28,8 +31,6 @@ const QString Node::gmaAttributeNames[ AN_LAST ] =
       , "y"           /// AN_Y      y coordinate
       , "width"       /// AN_WIDTH  width
       , "height"      /// AN_HEIGHT heigth
-      , "enterportx"
-      , "enterporty"
     };
 
 static Node goNodeProto(0, "node_prototype", true );
@@ -54,7 +55,6 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   , mpoSelectionHandleTopRight( 0 )
   , mpoSelectionHandleBottomLeft( 0 )
   , mpoSelectionHandleBottomRight( 0 )
-  , mpoEnterPort(0)
 {
   if (bInIsPrototype ) return; // no further registration
 
@@ -79,10 +79,9 @@ Node::Node( const QDomElement* poInDomElement, const QString& roInDefaultName, b
   FSMElementManager::getInstance().addElement( this );
 }
 
+
 Node::~Node()
 {
-  delete mpoEnterPort;
-  mpoEnterPort = 0;
 }
 
 void Node::setId( const QString& roInId )
@@ -138,7 +137,12 @@ QColor Node::backgroundColor() const
 QRectF Node::boundingRect() const
 {
   const int Margin = 1;
-  return outlineRect().adjusted(-Margin, -Margin, +Margin, +Margin);
+  QRectF rect = outlineRect().adjusted(-Margin, -Margin, +Margin, +Margin);
+  if( "entry" == moType )
+  {
+    rect.setTopLeft(QPoint(rect.topLeft().x(),rect.topLeft().y()- ENTRY_DISTANCE - ENTRY_WIDTH));
+  }
+  return rect;
 }
 
 QPainterPath Node::shape() const
@@ -148,6 +152,8 @@ QPainterPath Node::shape() const
   QPainterPath path;
   path.addRoundRect(rect, roundness(rect.width()),
                     roundness(rect.height()));
+  QPoint oEllipseCenter = QPoint(rect.topLeft().x(),rect.topLeft().y()- ENTRY_DISTANCE);
+  path.addEllipse(oEllipseCenter,ENTRY_WIDTH,ENTRY_WIDTH);
   return path;
 }
 
@@ -155,6 +161,7 @@ QPainterPath Node::shape() const
 Port* Node::createConnectionPort( const Node* poToNode )
 {
   if ( !poToNode ) return 0;
+ // if( poToNode->isEnterNode() && (1 < poToNode->portCnt())) return 0;
 
   bool bSelfTransition = false;
 
@@ -325,6 +332,15 @@ void Node::paint(QPainter *painter,
   QRectF oRect = outlineRect();
   painter->drawRoundRect(oRect, roundness(oRect.width()),
                          roundness(oRect.height()));
+
+  if("entry" == moType)
+  {
+    painter->drawLine(  QPoint(oRect.topLeft().x()+oRect.width()/2, oRect.topLeft().y())
+                       ,QPoint(oRect.topLeft().x()+oRect.width()/2, oRect.topLeft().y()-ENTRY_DISTANCE ) );
+    painter->setBrush(Qt::black);
+    painter->drawEllipse(QPoint(oRect.topLeft().x()+oRect.width()/2, oRect.topLeft().y()- ENTRY_DISTANCE ),ENTRY_WIDTH,ENTRY_WIDTH);
+    painter->setBrush(moBackgroundColor);
+  }
 
   painter->setPen(moTextColor);
   QString oText = moId;
@@ -582,11 +598,6 @@ void Node::updateAttributesScene( QDomElement& roInOutElement) const
   roInOutElement.setAttribute( gmaAttributeNames[ AN_Y], pos().y());
   roInOutElement.setAttribute( gmaAttributeNames[ AN_WIDTH], boundingRect().width());
   roInOutElement.setAttribute( gmaAttributeNames[ AN_HEIGHT], boundingRect().height());
-  if( 0 != mpoEnterPort )
-  {
-    roInOutElement.setAttribute( gmaAttributeNames[ AN_ENTERPORT_X], mpoEnterPort->pos().x());
-    roInOutElement.setAttribute( gmaAttributeNames[ AN_ENTERPORT_Y], mpoEnterPort->pos().y());
-  }
 }
 
 // assign attribute - returning false if not assigned
@@ -604,6 +615,9 @@ bool Node::setAttribute( const QString& roInName, const QString& roInValue)
   {
     // common handling in base class
     bResult = FSMElementBase::setAttribute( roInName, roInValue);
+    scene()->update();
+    updateHandlePositions();
+
   }
 
   return bResult;
@@ -616,33 +630,24 @@ void Node::applyAttributes( const QDomElement& roInElement )
   if (!oAttr.isEmpty()) moId = oAttr;
 
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_TYPE ], "" );
-  if (!oAttr.isEmpty()) moType = oAttr;
-
-  if( "entry" == moType )
-  {
-    if( 0 == mpoEnterPort )
-    {
-      mpoEnterPort = createConnectionPort(this);
-    }
-  }
-
+  moType = oAttr;
 
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTER ], "");
-  if (!oAttr.isEmpty()) moEnterActions = oAttr;
+  moEnterActions = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EXIT ], "");
-  if (!oAttr.isEmpty()) moExitActions = oAttr;
+  moExitActions = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTARTENTER], "");
-  if (!oAttr.isEmpty()) moEnterStartTimers = oAttr;
+  moEnterStartTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTARTEXIT], "");
-  if (!oAttr.isEmpty()) moExitStartTimers = oAttr;
+  moExitStartTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTOPENTER], "");
-  if (!oAttr.isEmpty()) moEnterStopTimers = oAttr;
+  moEnterStopTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_TSTOPEXIT], "");
-  if (!oAttr.isEmpty()) moExitStopTimers = oAttr;
+  moExitStopTimers = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EVENTENTER], "");
-  if (!oAttr.isEmpty()) moEnterEvents = oAttr;
+  moEnterEvents = oAttr;
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EVENTEXIT], "");
-  if (!oAttr.isEmpty()) moExitEvents = oAttr;
+  moExitEvents = oAttr;
 
   // x
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_X], "");
@@ -665,29 +670,6 @@ void Node::applyAttributes( const QDomElement& roInElement )
   oAttr = roInElement.attribute( gmaAttributeNames[ AN_HEIGHT], "");
   if ( !oAttr.isEmpty()) ( oAttr.toDouble());
 #endif
-
-  // enter port handles
-  if( 0 != mpoEnterPort )
-  {
-    oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTERPORT_X], "");
-    double dX=0.0;
-    double dY=0.0;
-    if ( !oAttr.isEmpty())
-    {
-      dX = oAttr.toDouble();
-    }
-    // y
-    oAttr = roInElement.attribute( gmaAttributeNames[ AN_ENTERPORT_Y], "");
-    if ( !oAttr.isEmpty())
-    {
-      dY = oAttr.toDouble();
-    }
-
-    if( (0.0 != dX) && (0.0 != dY) )
-    {
-      mpoEnterPort->setPos(dX,dY);
-    }
-  }
 
   // add reference
   const QDomNode& roDomNode = roInElement.parentNode();
@@ -743,14 +725,19 @@ void Node::createSelectionHandles()
 // update handle positions
 void Node::updateHandlePositions()
 {
-  const qreal& rWidth = boundingRect().width();
-  const qreal& rHeight = boundingRect().height();
+//  const qreal& rWidth = boundingRect().width();
+//  const qreal& rHeight = boundingRect().height();
 
-  // move handles relative to center of Node
-  mpoSelectionHandleTopLeft     -> setPos( -rWidth / 2.0, -rHeight / 2.0 );
-  mpoSelectionHandleTopRight    -> setPos(  rWidth / 2.0, -rHeight / 2.0 );
-  mpoSelectionHandleBottomLeft  -> setPos( -rWidth / 2.0, rHeight / 2.0 );
-  mpoSelectionHandleBottomRight -> setPos(  rWidth / 2.0, rHeight / 2.0 );
+//  // move handles relative to center of Node
+//  mpoSelectionHandleTopLeft     -> setPos( -rWidth / 2.0, -rHeight / 2.0 );
+//  mpoSelectionHandleTopRight    -> setPos(  rWidth / 2.0, -rHeight / 2.0 );
+//  mpoSelectionHandleBottomLeft  -> setPos( -rWidth / 2.0, rHeight / 2.0 );
+//  mpoSelectionHandleBottomRight -> setPos(  rWidth / 2.0, rHeight / 2.0 );
+  mpoSelectionHandleTopLeft -> setPos( boundingRect().topLeft() );
+  mpoSelectionHandleTopRight -> setPos( boundingRect().topRight());
+  mpoSelectionHandleBottomLeft -> setPos( boundingRect().bottomLeft());
+  mpoSelectionHandleBottomRight -> setPos( boundingRect().bottomRight());
+
 }
 
 // show/hide handles

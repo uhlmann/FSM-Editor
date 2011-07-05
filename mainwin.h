@@ -65,7 +65,8 @@ private:
   void createNavigation();
   void setZValue(int z);
   void setupNode(Node *node);
-  Node *selectedNode() const;
+  void setupEnter(Node *node);
+  Node *selectedNode();
   Link *selectedLink() const;
   NodePair_T selectedNodePair() const;
 
@@ -78,6 +79,7 @@ private:
   QAction *mpoActionClose;
   QAction *mpoActionExit;
   QAction *mpoActionNode;
+  QAction *mpoActionEntryNode;
   QAction *mpoActionLink;
   QAction *mpoActionDefinition;
   QAction *mpoActionDelete;
@@ -98,6 +100,7 @@ private:
   QTreeWidget*     mpoStateNav;          // state navigation
   DlgAttributes*   mpoDlgAttributes;     // Dialog to show dom attributes
   DlgDefinitionNew* mpoDlgDefinitionNew; // dialog for new definition
+  Node* mpoSelectedNode;
 
   int miMinZ;
   int miMaxZ;

@@ -40,8 +40,6 @@ public:
         , AN_Y           /// y coordinate
         , AN_WIDTH       /// width
         , AN_HEIGHT      /// heigth
-        , AN_ENTERPORT_X /// state entry port x
-        , AN_ENTERPORT_Y /// state entry port y
         , AN_LAST        /// end marker
     };
 
@@ -61,6 +59,8 @@ public:
     QColor outlineColor() const;
     void setBackgroundColor(const QColor &roInolor);
     QColor backgroundColor() const;
+
+    int portCnt() const { return miPortCnt; }
 
     /* overwritten methods of base class */
     QRectF boundingRect() const;
@@ -144,7 +144,6 @@ protected:
     QColor moOutlineColor;
 
     static const qreal   gmdLimitMaxWidth; /// maximum text width
-    Port*  mpoEnterPort;
 
 
 

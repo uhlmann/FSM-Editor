@@ -48,6 +48,7 @@ MainWin::MainWin()
   , mpoStateNav( 0 )
   , mpoDlgAttributes( 0 )
   , mpoDlgDefinitionNew( 0 )
+  , mpoSelectedNode(0)
 {
   mpoView->setScene(mpoScene);
   mpoView->setDragMode(QGraphicsView::RubberBandDrag);
@@ -146,6 +147,9 @@ void MainWin::slotAddNode( const QDomElement * poInElement )
 
   setupNode(poNode);
 }
+
+
+
 
 void MainWin::slotAddLink( const QDomElement * poInElement )
 {
@@ -536,12 +540,34 @@ void MainWin::setupNode(Node *poInNode)
   slotBringToFront();
 }
 
-Node *MainWin::selectedNode() const
+void MainWin::setupEnter(Node *poInNode)
+{
+  poInNode->setPos(QPoint(80 + (100 * (miNumber % 5)),
+                          80 + (50 * ((miNumber / 5) % 7))));
+  mpoScene->addItem(poInNode);
+  ++miNumber;
+
+  mpoScene->clearSelection();
+  poInNode->setSelected(true);
+  slotBringToFront();
+}
+
+
+
+Node *MainWin::selectedNode()
 {
   QList<QGraphicsItem *> items = mpoScene->selectedItems();
   if (items.count() == 1) {
+    mpoSelectedNode = dynamic_cast<Node *>(items.first());
     return dynamic_cast<Node *>(items.first());
-  } else {
+  }
+  else if(items.isEmpty())
+  {
+    mpoSelectedNode = 0;
+    return 0;
+  }
+  else
+  {
     return 0;
   }
 }
@@ -563,7 +589,17 @@ MainWin::NodePair_T MainWin::selectedNodePair() const
     Node *first = dynamic_cast<Node *>(items.first());
     Node *second = dynamic_cast<Node *>(items.last());
     if (first && second)
-      return NodePair_T(first, second);
+    {
+      if( (0 != mpoSelectedNode) && (second == mpoSelectedNode) )
+      {
+        qDebug() << "changed order";
+        return NodePair_T(second,first);
+      }
+      else
+      {
+        return NodePair_T(first, second);
+      }
+    }
   }
   return NodePair_T();
 }

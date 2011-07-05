@@ -51,8 +51,6 @@ Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected, bool bInProto
     return;
   }
 
-  mpoTextItem = new QGraphicsSimpleTextItem( this );
-
   // assign start node
   if ( poInFromNode ) moStateFrom = poInFromNode->getId();
   // assign end node
@@ -61,8 +59,15 @@ Link::Link(Node *poInFromNode, Node *poInToNode, bool bInDirected, bool bInProto
   mpoFromPort = poInFromNode->createConnectionPort( poInToNode );
   mpoToPort   = poInToNode->createConnectionPort( poInFromNode );
 
+  if ( !mpoFromPort || !mpoToPort)
+  {/// destination or source node do not exist
+    return;
+  }
+
   mpoFromPort->addLink(this);
   mpoToPort->addLink(this);
+
+  mpoTextItem = new QGraphicsSimpleTextItem( this );
 
   setFlags(QGraphicsItem::ItemIsSelectable);
   setZValue(-1);
@@ -312,10 +317,12 @@ void Link::paint
   if ( mbDrawArrow )
   {// draw arrow at end point
     QLineF oLineBack;
-    oLineBack.setP1(path().pointAtPercent(0));
+    //oLineBack.setP1(path().pointAtPercent(0));
+    oLineBack.setP1(path().pointAtPercent(1));
     oLineBack.setLength( ARROWSIZE );
     // rotate 15 degrees clockwise
-    oLineBack.setAngle( path().angleAtPercent(0) + 15.0 );
+//    oLineBack.setAngle( path().angleAtPercent(0) + 15.0 );
+    oLineBack.setAngle( path().angleAtPercent(1) + 195 );
 
     QPointF oArrowStart = oLineBack.p2();
     // rotate 2*15 degrees counter clockwise
@@ -339,6 +346,7 @@ void Link::updateText()
   if ( !mpoTextItem ) return;
 
   QString oText = moTrigger;
+
   if ( !moCondition.isEmpty())
   {
     oText +=" [";

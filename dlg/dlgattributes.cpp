@@ -135,11 +135,13 @@ void DlgAttributes::setDomElement( const QDomElement& roInElement )
       // fill attributes into the table widget
       for ( iCol = 0; iCol < 2; ++iCol )
       {
+        bool bCreated = false;
         // item in table
         QTableWidgetItem* poItem = mpoTableWidget->item( iRow, iCol );
         if ( !poItem )
         {
           poItem = new QTableWidgetItem;
+          bCreated = true;
         }
 
         if ( iCol == 0 )
@@ -154,7 +156,7 @@ void DlgAttributes::setDomElement( const QDomElement& roInElement )
         {
           poItem->setText( oAttribute.value() );
         }
-        mpoTableWidget->setItem( iRow, iCol, poItem);
+        if(bCreated)mpoTableWidget->setItem( iRow, iCol, poItem);
       }
     }
   }
