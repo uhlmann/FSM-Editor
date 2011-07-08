@@ -4,6 +4,7 @@
 */
 
 #include <assert.h>
+#include <math.h>
 
 #include <QtGui>
 #include <QComboBox>
@@ -359,7 +360,7 @@ void MainWin::slotZoomChanged( int iInZoomFac )
 {
   if ( mpoView && mpoSBZoomPercent )
   {
-    double newScale = static_cast<double>( mpoSBZoomPercent->value() ) / 100.0;
+    double newScale = sqrt( static_cast<double>( mpoSBZoomPercent->value() ) / 100.0 );
     QMatrix oldMatrix = mpoView->matrix();
     mpoView->resetMatrix();
     mpoView->translate(oldMatrix.dx(), oldMatrix.dy());
@@ -373,8 +374,8 @@ void MainWin::createSpinBoxes()
   // create new combobox for zoom levels
   mpoSBZoomPercent =  new QSpinBox(this);
 
-  mpoSBZoomPercent->setRange(25, 800);
-  mpoSBZoomPercent->setSingleStep(25);
+  mpoSBZoomPercent->setRange(1, 1000);
+  mpoSBZoomPercent->setSingleStep(10);
   mpoSBZoomPercent->setSuffix("%");
   mpoSBZoomPercent->setValue(100);
   // tool tip
