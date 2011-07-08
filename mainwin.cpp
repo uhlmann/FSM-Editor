@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include <QtGui>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -25,6 +26,7 @@ MainWin::MainWin()
   : mpoFileMenu( 0 )
   , mpoEditMenu( 0 )
   , mpoViewMenu( 0 )
+  , mpoSBZoomPercent( 0 )
   , mpoEditToolBar( 0 )
   , mpoActionOpen( 0 )
   , mpoActionSaveAs( 0 )
@@ -63,6 +65,7 @@ MainWin::MainWin()
 
   createActions();
   createMenus();
+  createSpinBoxes();
   createToolBars();
   createNavigation();
 
@@ -351,6 +354,37 @@ void MainWin::slotDefinitionSelectionChanged()
   }
 }
 
+// zoom factor changed
+void MainWin::slotZoomChanged( int iInZoomFac )
+{
+  if ( mpoView && mpoSBZoomPercent )
+  {
+    double newScale = static_cast<double>( mpoSBZoomPercent->value() ) / 100.0;
+    QMatrix oldMatrix = mpoView->matrix();
+    mpoView->resetMatrix();
+    mpoView->translate(oldMatrix.dx(), oldMatrix.dy());
+    mpoView->scale(newScale, newScale);
+  }
+}
+
+// has to be called before createToolBars() is called
+void MainWin::createSpinBoxes()
+{
+  // create new combobox for zoom levels
+  mpoSBZoomPercent =  new QSpinBox(this);
+
+  mpoSBZoomPercent->setRange(25, 800);
+  mpoSBZoomPercent->setSingleStep(25);
+  mpoSBZoomPercent->setSuffix("%");
+  mpoSBZoomPercent->setValue(100);
+  // tool tip
+  mpoSBZoomPercent->setToolTip( tr( "Zoom factor") );
+  // connect zoom spin box
+  connect( mpoSBZoomPercent, SIGNAL( valueChanged( int )),
+           this, SLOT( slotZoomChanged( int )) );
+
+}
+
 void MainWin::createActions()
 {
   mpoActionOpen = new QAction(tr("&Open..."), this);
@@ -464,6 +498,8 @@ void MainWin::createToolBars()
   mpoEditToolBar->addSeparator();
   mpoEditToolBar->addAction(mpoActionBringToFront);
   mpoEditToolBar->addAction(mpoActionBringToBack);
+  mpoEditToolBar->addSeparator();
+  mpoEditToolBar->addWidget( mpoSBZoomPercent);
 }
 
 void MainWin::createNavigation()
