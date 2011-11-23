@@ -352,7 +352,7 @@ void Node::paint(QPainter *painter,
     QRectF oExitRect = getExitSectionRect();
     qreal height1=getNameRect().height() + mdPadding;
     qreal height2=height1 + getEnterSectionRect().height();
-  //  qreal height3=height2 + getExitSectionRect().height();
+    qreal height3=height2 + getExitSectionRect().height();
     painter->drawText(QRectF(oRect.left(),oRect.top(),oRect.width(),height1), Qt::AlignCenter, oText.trimmed() );
     painter->setPen(penSections);
     painter->drawLine(QPointF(oRect.left(),oRect.top() + height1),QPoint(oRect.right(),oRect.top() + height1));
@@ -374,8 +374,8 @@ void Node::paint(QPainter *painter,
     oText += getExitEventsStr();
 
     painter->drawText(QRectF(oRect.left(),oRect.top() + height2,oRect.width(),getExitSectionRect().height()), Qt::AlignCenter, oText.trimmed() );
-//    painter->setPen(penSections);
-//    painter->drawLine(QPointF(oRect.left(),oRect.top() + height3),QPoint(oRect.right(),oRect.top() + height3));
+   // painter->setPen(penSections);
+   // painter->drawLine(QPointF(oRect.left(),oRect.top() + height3),QPoint(oRect.right(),oRect.top() + height3));
   }
   else
   {
@@ -649,28 +649,6 @@ void Node::applyAttributes( const QDomElement& roInElement )
   oAttr  = roInElement.attribute( gmaAttributeNames[ AN_EVENTEXIT], "");
   moExitEvents = oAttr;
 
-  // x
-  oAttr = roInElement.attribute( gmaAttributeNames[ AN_X], "");
-  if ( !oAttr.isEmpty())
-  {
-    setX( oAttr.toDouble());
-  }
-  // y
-  oAttr = roInElement.attribute( gmaAttributeNames[ AN_Y], "");
-  if ( !oAttr.isEmpty())
-  {
-    setY( oAttr.toDouble());
-  }
-
-#if 0
-  // width
-  oAttr = roInElement.attribute( gmaAttributeNames[ AN_WIDTH], "");
-  if ( !oAttr.isEmpty()) ( oAttr.toDouble());
-  // height
-  oAttr = roInElement.attribute( gmaAttributeNames[ AN_HEIGHT], "");
-  if ( !oAttr.isEmpty()) ( oAttr.toDouble());
-#endif
-
   // add reference
   const QDomNode& roDomNode = roInElement.parentNode();
   if ( !roDomNode.isNull() )
@@ -693,6 +671,33 @@ void Node::applyAttributes( const QDomElement& roInElement )
     }
   }
 }
+
+
+void Node::applySceneAttributes( const QDomElement& roInElement )
+{
+  // x
+  QString oAttr = roInElement.attribute( gmaAttributeNames[ AN_X], "");
+  if ( !oAttr.isEmpty())
+  {
+    setX( oAttr.toDouble());
+  }
+  // y
+  oAttr = roInElement.attribute( gmaAttributeNames[ AN_Y], "");
+  if ( !oAttr.isEmpty())
+  {
+    setY( oAttr.toDouble());
+  }
+
+#if 0
+  // width
+  oAttr = roInElement.attribute( gmaAttributeNames[ AN_WIDTH], "");
+  if ( !oAttr.isEmpty()) ( oAttr.toDouble());
+  // height
+  oAttr = roInElement.attribute( gmaAttributeNames[ AN_HEIGHT], "");
+  if ( !oAttr.isEmpty()) ( oAttr.toDouble());
+#endif
+}
+
 
 // create selection handles
 void Node::createSelectionHandles()

@@ -253,7 +253,7 @@ void FSMElementManager::addTreeItem( FSMDefinitionIfc* poInDefinition )
   {// secion missing
     mpoRootTreeItemDefinitions =
         new QTreeWidgetItem( mpoMainWindow->getDefinitionView());
-    mpoRootTreeItemDefinitions->setText( 0, moRootName );
+    mpoRootTreeItemDefinitions->setText( 0, "definitions" );
   }
   // create new item
   QTreeWidgetItem* poTreeItem =
@@ -537,7 +537,7 @@ bool FSMElementManager::parseSceneElement( const QDomElement& roInElement)
         FSMElementIfc* poItem = getItem( oId );
         if ( poItem )
         {// assgingn values contained in attributes
-          poItem->applyAttributes( oSceneElement );
+          poItem->applySceneAttributes( oSceneElement );
         }
       } // attribut id is assigned
       oSceneElement = oSceneElement.nextSiblingElement(gmaXMLSectionNames[ eElementType ]);

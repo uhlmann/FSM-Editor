@@ -581,6 +581,91 @@ void Link::applyAttributes( const QDomElement& roInElement )
   }
 }
 
+
+// apply attributes
+void Link::applySceneAttributes( const QDomElement& roInElement )
+{
+
+  if ( !mpoFromPort || !mpoToPort ) return;
+
+  QString oPolygon = roInElement.attribute( gmaAttributeNames[ AN_POLYGON], "");
+  if ( !oPolygon.isEmpty() )
+  {
+    QStringList oPointList = oPolygon.split(" ");
+    if ( mpoFromPort && oPointList.count() >= 2 )
+    {
+      bool bValid = false;
+      double dX = (oPointList.takeFirst()).toDouble( &bValid );
+      if ( bValid )
+      {
+        double dY = (oPointList.takeFirst()).toDouble( &bValid );
+        if ( bValid )
+        {
+
+          mpoFromPort->setPos( dX, dY );
+          mpoFromPort->update();
+        }
+        else
+        {
+          assert( 0 );
+        }
+      }
+      else
+      {
+        assert( 0 );
+      }
+    }
+
+    if ( mpoToPort && oPointList.count() >= 2 )
+    {
+      bool bValid = false;
+      double dX = (oPointList.takeFirst()).toDouble( &bValid );
+      if ( bValid )
+      {
+        double dY = (oPointList.takeFirst()).toDouble( &bValid );
+        if ( bValid )
+        {
+          mpoToPort->setPos( dX, dY );
+          mpoToPort->update();
+        }
+        else
+        {
+          assert( 0 );
+        }
+      }
+      else
+      {
+        assert( 0 );
+      }
+    }
+
+    if( oPointList.count() >= 2 )
+    {
+      bool bValid = false;
+      double dX = (oPointList.takeFirst()).toDouble( &bValid );
+      if ( bValid )
+      {
+        double dY = (oPointList.takeFirst()).toDouble( &bValid );
+        if ( bValid )
+        {
+          moControlPoint.setX(dX);
+          moControlPoint.setY(dY);
+        }
+        else
+        {
+          assert( 0 );
+        }
+      }
+      else
+      {
+        assert( 0 );
+      }
+    }
+  }
+  updateGeometry();
+}
+
+
 // slot to connect on signal sigChangedId( const FSMElementIfc&)
 void Link::slotUpdateId( const FSMElementIfc& )
 {

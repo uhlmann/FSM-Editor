@@ -62,6 +62,7 @@ public:
     bool setAttribute( const QString& roInName, const QString& roInValue);
     // apply attributes
     void applyAttributes( const QDomElement& roInElement );
+    void applySceneAttributes( const QDomElement& roInElement );
 
 protected:
     // calculate id from a dom element

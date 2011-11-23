@@ -91,6 +91,7 @@ public:
     bool setAttribute( const QString& roInName, const QString& roInValue);
     // apply attributes
     void applyAttributes( const QDomElement& roInElement );
+    void applySceneAttributes( const QDomElement& roInElement );
 
 #if 0
     // calculate id by Element class using related Dom Element

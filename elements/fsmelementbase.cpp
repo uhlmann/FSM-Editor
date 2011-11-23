@@ -136,6 +136,12 @@ void FSMElementBase::applyAttributes( const QDomElement& /*roInElement*/ )
 
 }
 
+// apply attributes
+void FSMElementBase::applySceneAttributes( const QDomElement& /*roInElement*/ )
+{
+
+}
+
 // returns string list with definition names
 const QStringList FSMElementBase::getElementNames( void )
 {

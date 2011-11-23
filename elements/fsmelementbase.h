@@ -44,6 +44,7 @@ public:
 
     // apply attributes
     void applyAttributes( const QDomElement& roInElement );
+    void applySceneAttributes( const QDomElement& roInElement );
 
     // returns string list with definition names
     static const QStringList getElementNames( void );

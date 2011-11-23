@@ -56,6 +56,7 @@ public:
 
     // apply attributes
     virtual void applyAttributes( const QDomElement& roInElement ) = 0;
+    virtual void applySceneAttributes( const QDomElement& roInElement ) = 0;
     // assign id of element containing related dom parent
     virtual void setDomParentId( const QString& roInId ) = 0;
 
