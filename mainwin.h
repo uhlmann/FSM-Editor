@@ -14,6 +14,7 @@ class Link;
 class Node;
 
 class QAction;
+class QSpinBox;
 class QDomElement;
 class QGraphicsItem;
 class QGraphicsScene;
@@ -55,10 +56,13 @@ private slots:
   void slotSelectionChanged();
   // selection of definition changed
   void slotDefinitionSelectionChanged();
+  // zoom changed
+  void slotZoomChanged( int );
 
 private:
   typedef QPair<Node *, Node *> NodePair_T;
 
+  void createSpinBoxes();
   void createActions();
   void createMenus();
   void createToolBars();
@@ -73,6 +77,7 @@ private:
   QMenu *mpoFileMenu;
   QMenu *mpoEditMenu;
   QMenu *mpoViewMenu; /// menu with views
+  QSpinBox *mpoSBZoomPercent;
   QToolBar *mpoEditToolBar;
   QAction *mpoActionOpen;
   QAction *mpoActionSaveAs;
